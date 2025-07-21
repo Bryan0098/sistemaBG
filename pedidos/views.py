@@ -1,4 +1,245 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Cliente, Proveedor, Categoria, Producto, Pedido, DetallePedido
 
+# Home View
 def home(request):
     return render(request, 'index.html')
+
+# ---------------------------------------------------------
+# Vistas para Cliente
+# ---------------------------------------------------------
+
+def gestionar_clientes(request):
+    if request.method == 'POST':
+        # Crear un cliente
+        if 'crear' in request.POST:
+            nombre = request.POST.get('nombre')
+            apellido = request.POST.get('apellido')
+            telefono = request.POST.get('telefono')
+            email = request.POST.get('email')
+            Cliente.objects.create(
+                nombre=nombre,
+                apellido=apellido,
+                telefono=telefono,
+                email=email
+            )
+            messages.success(request, "Cliente creado con éxito.")
+
+        # Actualizar un cliente
+        elif 'actualizar' in request.POST:
+            id_cliente = request.POST.get('id_cliente')
+            cliente = get_object_or_404(Cliente, id_cliente=id_cliente)
+            cliente.nombre = request.POST.get('nombre')
+            cliente.apellido = request.POST.get('apellido')
+            cliente.telefono = request.POST.get('telefono')
+            cliente.email = request.POST.get('email')
+            cliente.save()
+            messages.success(request, "Cliente actualizado con éxito.")
+        
+        # Eliminar un cliente
+        elif 'eliminar' in request.POST:
+            id_cliente = request.POST.get('id_cliente')
+            cliente = get_object_or_404(Cliente, id_cliente=id_cliente)
+            cliente.delete()
+            messages.success(request, "Cliente eliminado con éxito.")
+    
+    clientes = Cliente.objects.all()
+    return render(request, 'gestionar_clientes.html', {'clientes': clientes})
+
+# ---------------------------------------------------------
+# Vistas para Proveedor
+# ---------------------------------------------------------
+
+def gestionar_proveedores(request):
+    if request.method == 'POST':
+        # Crear un proveedor
+        if 'crear' in request.POST:
+            nombre = request.POST.get('nombre')
+            contacto = request.POST.get('contacto')
+            telefono = request.POST.get('telefono')
+            Proveedor.objects.create(
+                nombre=nombre,
+                contacto=contacto,
+                telefono=telefono
+            )
+            messages.success(request, "Proveedor creado con éxito.")
+
+        # Actualizar un proveedor
+        elif 'actualizar' in request.POST:
+            id_proveedor = request.POST.get('id_proveedor')
+            proveedor = get_object_or_404(Proveedor, id_proveedor=id_proveedor)
+            proveedor.nombre = request.POST.get('nombre')
+            proveedor.contacto = request.POST.get('contacto')
+            proveedor.telefono = request.POST.get('telefono')
+            proveedor.save()
+            messages.success(request, "Proveedor actualizado con éxito.")
+        
+        # Eliminar un proveedor
+        elif 'eliminar' in request.POST:
+            id_proveedor = request.POST.get('id_proveedor')
+            proveedor = get_object_or_404(Proveedor, id_proveedor=id_proveedor)
+            proveedor.delete()
+            messages.success(request, "Proveedor eliminado con éxito.")
+    
+    proveedores = Proveedor.objects.all()
+    return render(request, 'gestionar_proveedores.html', {'proveedores': proveedores})
+
+# ---------------------------------------------------------
+# Vistas para Categoria
+# ---------------------------------------------------------
+
+def gestionar_categorias(request):
+    if request.method == 'POST':
+        # Crear una categoría
+        if 'crear' in request.POST:
+            nombre = request.POST.get('nombre')
+            descripcion = request.POST.get('descripcion')
+            Categoria.objects.create(
+                nombre=nombre,
+                descripcion=descripcion
+            )
+            messages.success(request, "Categoría creada con éxito.")
+
+        # Actualizar una categoría
+        elif 'actualizar' in request.POST:
+            id_categoria = request.POST.get('id_categoria')
+            categoria = get_object_or_404(Categoria, id_categoria=id_categoria)
+            categoria.nombre = request.POST.get('nombre')
+            categoria.descripcion = request.POST.get('descripcion')
+            categoria.save()
+            messages.success(request, "Categoría actualizada con éxito.")
+        
+        # Eliminar una categoría
+        elif 'eliminar' in request.POST:
+            id_categoria = request.POST.get('id_categoria')
+            categoria = get_object_or_404(Categoria, id_categoria=id_categoria)
+            categoria.delete()
+            messages.success(request, "Categoría eliminada con éxito.")
+    
+    categorias = Categoria.objects.all()
+    return render(request, 'gestionar_categorias.html', {'categorias': categorias})
+
+# ---------------------------------------------------------
+# Vistas para Producto
+# ---------------------------------------------------------
+
+def gestionar_productos(request):
+    if request.method == 'POST':
+        # Crear un producto
+        if 'crear' in request.POST:
+            nombre = request.POST.get('nombre')
+            descripcion = request.POST.get('descripcion')
+            precio = request.POST.get('precio')
+            stock = request.POST.get('stock')
+            stock_minimo = request.POST.get('stock_minimo')
+            id_categoria = request.POST.get('id_categoria')
+            id_proveedor = request.POST.get('id_proveedor')
+            Producto.objects.create(
+                nombre=nombre,
+                descripcion=descripcion,
+                precio=precio,
+                stock=stock,
+                stock_minimo=stock_minimo,
+                categoria_id=id_categoria,
+                proveedor_id=id_proveedor
+            )
+            messages.success(request, "Producto creado con éxito.")
+
+        # Actualizar un producto
+        elif 'actualizar' in request.POST:
+            id_producto = request.POST.get('id_producto')
+            producto = get_object_or_404(Producto, id_producto=id_producto)
+            producto.nombre = request.POST.get('nombre')
+            producto.descripcion = request.POST.get('descripcion')
+            producto.precio = request.POST.get('precio')
+            producto.stock = request.POST.get('stock')
+            producto.stock_minimo = request.POST.get('stock_minimo')
+            producto.save()
+            messages.success(request, "Producto actualizado con éxito.")
+        
+        # Eliminar un producto
+        elif 'eliminar' in request.POST:
+            id_producto = request.POST.get('id_producto')
+            producto = get_object_or_404(Producto, id_producto=id_producto)
+            producto.delete()
+            messages.success(request, "Producto eliminado con éxito.")
+    
+    productos = Producto.objects.all()
+    return render(request, 'gestionar_productos.html', {'productos': productos})
+
+# ---------------------------------------------------------
+# Vistas para Pedido
+# ---------------------------------------------------------
+
+def gestionar_pedidos(request):
+    if request.method == 'POST':
+        # Crear un pedido
+        if 'crear' in request.POST:
+            id_cliente = request.POST.get('id_cliente')
+            estado = request.POST.get('estado')
+            total = request.POST.get('total')
+            Pedido.objects.create(
+                cliente_id=id_cliente,
+                estado=estado,
+                total=total
+            )
+            messages.success(request, "Pedido creado con éxito.")
+
+        # Actualizar un pedido
+        elif 'actualizar' in request.POST:
+            id_pedido = request.POST.get('id_pedido')
+            pedido = get_object_or_404(Pedido, id_pedido=id_pedido)
+            pedido.estado = request.POST.get('estado')
+            pedido.total = request.POST.get('total')
+            pedido.save()
+            messages.success(request, "Pedido actualizado con éxito.")
+        
+        # Eliminar un pedido
+        elif 'eliminar' in request.POST:
+            id_pedido = request.POST.get('id_pedido')
+            pedido = get_object_or_404(Pedido, id_pedido=id_pedido)
+            pedido.delete()
+            messages.success(request, "Pedido eliminado con éxito.")
+    
+    pedidos = Pedido.objects.all()
+    return render(request, 'gestionar_pedidos.html', {'pedidos': pedidos})
+
+# ---------------------------------------------------------
+# Vistas para Detalle de Pedido
+# ---------------------------------------------------------
+
+def gestionar_detalle_pedidos(request):
+    if request.method == 'POST':
+        # Crear un detalle de pedido
+        if 'crear' in request.POST:
+            id_pedido = request.POST.get('id_pedido')
+            id_producto = request.POST.get('id_producto')
+            cantidad = request.POST.get('cantidad')
+            precio_unitario = request.POST.get('precio_unitario')
+            DetallePedido.objects.create(
+                pedido_id=id_pedido,
+                producto_id=id_producto,
+                cantidad=cantidad,
+                precio_unitario=precio_unitario
+            )
+            messages.success(request, "Detalle de pedido creado con éxito.")
+
+        # Actualizar un detalle de pedido
+        elif 'actualizar' in request.POST:
+            id_detalle = request.POST.get('id_detalle')
+            detalle = get_object_or_404(DetallePedido, id_detalle=id_detalle)
+            detalle.cantidad = request.POST.get('cantidad')
+            detalle.precio_unitario = request.POST.get('precio_unitario')
+            detalle.save()
+            messages.success(request, "Detalle de pedido actualizado con éxito.")
+        
+        # Eliminar un detalle de pedido
+        elif 'eliminar' in request.POST:
+            id_detalle = request.POST.get('id_detalle')
+            detalle = get_object_or_404(DetallePedido, id_detalle=id_detalle)
+            detalle.delete()
+            messages.success(request, "Detalle de pedido eliminado con éxito.")
+    
+    detalles_pedido = DetallePedido.objects.all()
+    return render(request, 'gestionar_detalle_pedidos.html', {'detalles_pedido': detalles_pedido})
