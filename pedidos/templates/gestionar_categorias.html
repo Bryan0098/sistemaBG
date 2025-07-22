@@ -1,58 +1,162 @@
 {% extends 'base.html' %}
-
-{% block title %}Gestionar Categorías - Portal{% endblock %}
+{% block title %}Gestionar Categorías{% endblock %}
 
 {% block content %}
-<h1>Gestionar Categorías</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Categorías</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCategoria">+ Nueva</button>
+</div>
 
-<!-- Mensajes de éxito o error -->
-{% if messages %}
-    <ul>
-        {% for message in messages %}
-            <li>{{ message }}</li>
+<table id="tabla-categorias" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for categoria in categorias %}
+        <tr>
+            <td>{{ categoria.nombre }}</td>
+            <td>{{ categoria.descripcion }}</td>
+            <td>
+                <button class="btn btn-warning btn-sm btn-editar" 
+                        data-id="{{ categoria.id_categoria }}" 
+                        data-nombre="{{ categoria.nombre }}" 
+                        data-descripcion="{{ categoria.descripcion }}">Editar</button>
+
+                <form method="POST" class="d-inline form-eliminar">
+                    {% csrf_token %}
+                    <input type="hidden" name="id_categoria" value="{{ categoria.id_categoria }}">
+                    <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
+                </form>
+            </td>
+        </tr>
         {% endfor %}
-    </ul>
-{% endif %}
+    </tbody>
+</table>
 
-<!-- Formulario para Crear Categoría -->
-<h2>Crear Categoría</h2>
-<form method="POST">
-    {% csrf_token %}
-    <label for="nombre">Nombre</label>
-    <input type="text" id="nombre" name="nombre" required><br>
+<!-- Modal para Crear/Editar -->
+<div class="modal fade" id="modalCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="form-categoria" method="POST" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="id_categoria" id="id_categoria">
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre</label>
+                    <input type="text" class="form-control" name="nombre" id="nombre" required>
+                </div>
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea class="form-control" name="descripcion" id="descripcion" rows="2" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" name="crear" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
 
-    <label for="descripcion">Descripción</label>
-    <textarea id="descripcion" name="descripcion" required></textarea><br>
+{% block extra_js %}
+{% load static %}
+<script>
+    
+    $(document).ready(function () {
+        // Inicializar DataTable
+        $('#tabla-categorias').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: 'excelHtml5', text: 'Exportar a Excel', className: 'btn btn-success btn-sm' },
+                { extend: 'pdfHtml5', text: 'Exportar a PDF', className: 'btn btn-danger btn-sm' },
+                { extend: 'print', text: 'Imprimir', className: 'btn btn-info btn-sm' }
+            ],
+            language: {
+                url: "{% static 'assets/plugins/datatables/lang/es-ES.json' %}"
+            }
+        });
 
-    <button type="submit" name="crear">Crear Categoría</button>
-</form>
+        // Validar formulario
+        $('#form-categoria').validate({
+            errorClass: 'is-invalid',
+            validClass: 'is-valid',
+            errorElement: 'div',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                if (element.parent('.input-group').length) {
+                    error.insertAfter(element.parent());
+                } else {
+                    error.insertAfter(element);
+                }
+            },
+            highlight: function (element) {
+                $(element).addClass('is-invalid').removeClass('is-valid');
+            },
+            unhighlight: function (element) {
+                $(element).removeClass('is-invalid').addClass('is-valid');
+            },
+            rules: {
+                nombre: { required: true },
+                descripcion: { required: true }
+            },
+            messages: {
+                nombre: "Ingrese el nombre",
+                descripcion: "Ingrese la descripción"
+            }
+        });
 
-<hr>
+        // Eliminar con confirmación
+        $('.form-eliminar').submit(function (e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
 
-<!-- Lista de Categorías -->
-<h2>Lista de Categorías</h2>
-<ul>
-    {% for categoria in categorias %}
-        <li>
-            {{ categoria.nombre }} - {{ categoria.descripcion }}
-            
-            <!-- Formulario para Actualizar Categoría -->
-            <button onclick="document.getElementById('update-form-{{ categoria.id_categoria }}').style.display = 'block'">Editar</button>
-            <form id="update-form-{{ categoria.id_categoria }}" method="POST" style="display:none;">
-                {% csrf_token %}
-                <input type="hidden" name="id_categoria" value="{{ categoria.id_categoria }}">
-                <input type="text" name="nombre" value="{{ categoria.nombre }}" required><br>
-                <textarea name="descripcion" required>{{ categoria.descripcion }}</textarea><br>
-                <button type="submit" name="actualizar">Actualizar Categoría</button>
-            </form>
+        // Mostrar datos al editar
+        $('.btn-editar').click(function () {
+            $('#id_categoria').val($(this).data('id'));
+            $('#nombre').val($(this).data('nombre'));
+            $('#descripcion').val($(this).data('descripcion'));
+            $('button[name="crear"]').attr('name', 'actualizar');
+            $('#modalCategoria .modal-title').text('Editar Categoría');
+            $('#modalCategoria').modal('show');
+        });
 
-            <!-- Formulario para Eliminar Categoría -->
-            <form method="POST" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="id_categoria" value="{{ categoria.id_categoria }}">
-                <button type="submit" name="eliminar" onclick="return confirm('¿Estás seguro de eliminar esta categoría?')">Eliminar</button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
+        // Resetear al cerrar modal
+        $('#modalCategoria').on('hidden.bs.modal', function () {
+            $('#form-categoria')[0].reset();
+            $('#id_categoria').val('');
+            $('#modalCategoria .modal-title').text('Agregar Categoría');
+            $('button[name="actualizar"]').attr('name', 'crear');
+        });
+
+        // Notificaciones
+        {% if messages %}
+            {% for message in messages %}
+                toastr.success("{{ message|escapejs }}");
+            {% endfor %}
+        {% endif %}
+    });
+</script>
 {% endblock %}

@@ -1,66 +1,182 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Gestionar Clientes - Portal{% endblock %}
+{% block title %}Gestionar Clientes{% endblock %}
 
 {% block content %}
-<h1>Gestionar Clientes</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Clientes</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCliente">+ Nuevo Cliente</button>
+</div>
 
-<!-- Mensajes de éxito o error -->
-{% if messages %}
-    <ul>
-        {% for message in messages %}
-            <li>{{ message }}</li>
+<table id="tabla-clientes" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cliente in clientes %}
+        <tr>
+            <td>{{ cliente.nombre }}</td>
+            <td>{{ cliente.apellido }}</td>
+            <td>{{ cliente.telefono }}</td>
+            <td>{{ cliente.email }}</td>
+            <td>
+                <button class="btn btn-warning btn-sm btn-editar"
+                    data-id="{{ cliente.id_cliente }}"
+                    data-nombre="{{ cliente.nombre }}"
+                    data-apellido="{{ cliente.apellido }}"
+                    data-telefono="{{ cliente.telefono }}"
+                    data-email="{{ cliente.email }}">Editar</button>
+
+                <form method="POST" class="d-inline form-eliminar">
+                    {% csrf_token %}
+                    <input type="hidden" name="id_cliente" value="{{ cliente.id_cliente }}">
+                    <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
+                </form>
+            </td>
+        </tr>
         {% endfor %}
-    </ul>
-{% endif %}
+    </tbody>
+</table>
 
-<!-- Formulario para Crear Cliente -->
-<h2>Crear Cliente</h2>
-<form method="POST">
-    {% csrf_token %}
-    <label for="nombre">Nombre</label>
-    <input type="text" id="nombre" name="nombre" required><br>
+<!-- Modal para Crear/Editar -->
+<div class="modal fade" id="modalCliente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="form-cliente" method="POST" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="id_cliente" id="id_cliente">
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="nombre" id="nombre" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" name="apellido" id="apellido" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="telefono" id="telefono" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" id="email" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" name="crear" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
 
-    <label for="apellido">Apellido</label>
-    <input type="text" id="apellido" name="apellido" required><br>
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        // Cargar idioma español desde archivo real
+        $('#tabla-clientes').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: 'excelHtml5', text: 'Exportar Excel', className: 'btn btn-success btn-sm' },
+                { extend: 'pdfHtml5', text: 'Exportar PDF', className: 'btn btn-danger btn-sm' },
+                { extend: 'print', text: 'Imprimir', className: 'btn btn-info btn-sm' }
+            ],
+            language: {
+                url: "{% static 'assets/plugins/datatables/lang/es-ES.json' %}"
+            }
+        });
 
-    <label for="telefono">Teléfono</label>
-    <input type="text" id="telefono" name="telefono" required><br>
+        // Validar formulario
+        $('#form-cliente').validate({
+            errorClass: 'is-invalid',
+            validClass: 'is-valid',
+            errorElement: 'div',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.mb-3').append(error);
+            },
+            highlight: function (element) {
+                $(element).addClass('is-invalid').removeClass('is-valid');
+            },
+            unhighlight: function (element) {
+                $(element).removeClass('is-invalid').addClass('is-valid');
+            },
+            rules: {
+                nombre: { required: true },
+                apellido: { required: true },
+                telefono: { required: true },
+                email: { required: true, email: true }
+            },
+            messages: {
+                nombre: "Ingrese el nombre",
+                apellido: "Ingrese el apellido",
+                telefono: "Ingrese el teléfono",
+                email: {
+                    required: "Ingrese el correo electrónico",
+                    email: "Formato de correo inválido"
+                }
+            }
+        });
 
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" required><br>
+        // Mostrar datos al editar
+        $('.btn-editar').click(function () {
+            $('#id_cliente').val($(this).data('id'));
+            $('#nombre').val($(this).data('nombre'));
+            $('#apellido').val($(this).data('apellido'));
+            $('#telefono').val($(this).data('telefono'));
+            $('#email').val($(this).data('email'));
+            $('button[name="crear"]').attr('name', 'actualizar');
+            $('#modalCliente .modal-title').text('Editar Cliente');
+            $('#modalCliente').modal('show');
+        });
 
-    <button type="submit" name="crear">Crear Cliente</button>
-</form>
+        // Resetear formulario
+        $('#modalCliente').on('hidden.bs.modal', function () {
+            $('#form-cliente')[0].reset();
+            $('#form-cliente .form-control').removeClass('is-valid is-invalid');
+            $('#id_cliente').val('');
+            $('button[name="actualizar"]').attr('name', 'crear');
+            $('#modalCliente .modal-title').text('Agregar Cliente');
+        });
 
-<hr>
+        // Eliminar con confirmación
+        $('.form-eliminar').submit(function (e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
 
-<!-- Lista de Clientes -->
-<h2>Lista de Clientes</h2>
-<ul>
-    {% for cliente in clientes %}
-        <li>
-            {{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.telefono }} - {{ cliente.email }}
-            
-            <!-- Formulario para Actualizar Cliente -->
-            <button onclick="document.getElementById('update-form-{{ cliente.id_cliente }}').style.display = 'block'">Editar</button>
-            <form id="update-form-{{ cliente.id_cliente }}" method="POST" style="display:none;">
-                {% csrf_token %}
-                <input type="hidden" name="id_cliente" value="{{ cliente.id_cliente }}">
-                <input type="text" name="nombre" value="{{ cliente.nombre }}" required><br>
-                <input type="text" name="apellido" value="{{ cliente.apellido }}" required><br>
-                <input type="text" name="telefono" value="{{ cliente.telefono }}" required><br>
-                <input type="email" name="email" value="{{ cliente.email }}" required><br>
-                <button type="submit" name="actualizar">Actualizar Cliente</button>
-            </form>
-
-            <!-- Formulario para Eliminar Cliente -->
-            <form method="POST" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="id_cliente" value="{{ cliente.id_cliente }}">
-                <button type="submit" name="eliminar" onclick="return confirm('¿Estás seguro de eliminar este cliente?')">Eliminar</button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
+        // Mostrar mensajes con Toastr
+        {% if messages %}
+            {% for message in messages %}
+                toastr.success("{{ message|escapejs }}");
+            {% endfor %}
+        {% endif %}
+    });
+</script>
 {% endblock %}

@@ -112,10 +112,15 @@ def gestionar_categorias(request):
         
         # Eliminar una categoría
         elif 'eliminar' in request.POST:
-            id_categoria = request.POST.get('id_categoria')
-            categoria = get_object_or_404(Categoria, id_categoria=id_categoria)
-            categoria.delete()
-            messages.success(request, "Categoría eliminada con éxito.")
+            try:
+                id_categoria = int(request.POST.get('id_categoria'))
+                categoria = Categoria.objects.get(pk=id_categoria)
+                categoria.delete()
+                messages.success(request, 'Categoría eliminada correctamente.')
+            except (Categoria.DoesNotExist, ValueError, TypeError):
+                messages.error(request, 'Error al eliminar la categoría.')
+
+        return redirect('gestionar_categorias')
     
     categorias = Categoria.objects.all()
     return render(request, 'gestionar_categorias.html', {'categorias': categorias})
