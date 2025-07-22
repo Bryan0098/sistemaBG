@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar Proveedores - Portal{% endblock %}
+
+{% block content %}
+<h1>Gestionar Proveedores</h1>
+
+<!-- Mensajes de éxito o error -->
+{% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<!-- Formulario para Crear Proveedor -->
+<h2>Crear Proveedor</h2>
+<form method="POST">
+    {% csrf_token %}
+    <label for="nombre">Nombre</label>
+    <input type="text" id="nombre" name="nombre" required><br>
+
+    <label for="contacto">Contacto</label>
+    <input type="text" id="contacto" name="contacto" required><br>
+
+    <label for="telefono">Teléfono</label>
+    <input type="text" id="telefono" name="telefono" required><br>
+
+    <button type="submit" name="crear">Crear Proveedor</button>
+</form>
+
+<hr>
+
+<!-- Lista de Proveedores -->
+<h2>Lista de Proveedores</h2>
+<ul>
+    {% for proveedor in proveedores %}
+        <li>
+            {{ proveedor.nombre }} - {{ proveedor.contacto }} - {{ proveedor.telefono }}
+            
+            <!-- Formulario para Actualizar Proveedor -->
+            <button onclick="document.getElementById('update-form-{{ proveedor.id_proveedor }}').style.display = 'block'">Editar</button>
+            <form id="update-form-{{ proveedor.id_proveedor }}" method="POST" style="display:none;">
+                {% csrf_token %}
+                <input type="hidden" name="id_proveedor" value="{{ proveedor.id_proveedor }}">
+                <input type="text" name="nombre" value="{{ proveedor.nombre }}" required><br>
+                <input type="text" name="contacto" value="{{ proveedor.contacto }}" required><br>
+                <input type="text" name="telefono" value="{{ proveedor.telefono }}" required><br>
+                <button type="submit" name="actualizar">Actualizar Proveedor</button>
+            </form>
+
+            <!-- Formulario para Eliminar Proveedor -->
+            <form method="POST" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="id_proveedor" value="{{ proveedor.id_proveedor }}">
+                <button type="submit" name="eliminar" onclick="return confirm('¿Estás seguro de eliminar este proveedor?')">Eliminar</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

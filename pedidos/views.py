@@ -133,16 +133,17 @@ def gestionar_productos(request):
             precio = request.POST.get('precio')
             stock = request.POST.get('stock')
             stock_minimo = request.POST.get('stock_minimo')
-            id_categoria = request.POST.get('id_categoria')
-            id_proveedor = request.POST.get('id_proveedor')
+            id_categoria = request.POST.get('categoria')  # nombre del campo debe coincidir con el de la plantilla
+            id_proveedor = request.POST.get('proveedor')  # nombre del campo debe coincidir con el de la plantilla
+
             Producto.objects.create(
                 nombre=nombre,
                 descripcion=descripcion,
                 precio=precio,
                 stock=stock,
                 stock_minimo=stock_minimo,
-                categoria_id=id_categoria,
-                proveedor_id=id_proveedor
+                categoria_id=id_categoria,  # Usando `categoria_id` para referirse a la clave foránea
+                proveedor_id=id_proveedor  # Usando `proveedor_id` para referirse a la clave foránea
             )
             messages.success(request, "Producto creado con éxito.")
 
@@ -155,6 +156,8 @@ def gestionar_productos(request):
             producto.precio = request.POST.get('precio')
             producto.stock = request.POST.get('stock')
             producto.stock_minimo = request.POST.get('stock_minimo')
+            producto.categoria_id = request.POST.get('categoria')  # Asegurando que se actualice la categoría
+            producto.proveedor_id = request.POST.get('proveedor')  # Asegurando que se actualice el proveedor
             producto.save()
             messages.success(request, "Producto actualizado con éxito.")
         
@@ -165,9 +168,16 @@ def gestionar_productos(request):
             producto.delete()
             messages.success(request, "Producto eliminado con éxito.")
     
+    # Consultar todos los productos y la lista de categorías y proveedores
     productos = Producto.objects.all()
-    return render(request, 'gestionar_productos.html', {'productos': productos})
+    categorias = Categoria.objects.all()
+    proveedores = Proveedor.objects.all()
 
+    return render(request, 'gestionar_productos.html', {
+        'productos': productos,
+        'categorias': categorias,
+        'proveedores': proveedores
+    })
 # ---------------------------------------------------------
 # Vistas para Pedido
 # ---------------------------------------------------------
@@ -210,36 +220,51 @@ def gestionar_pedidos(request):
 # ---------------------------------------------------------
 
 def gestionar_detalle_pedidos(request):
+    detalles_pedido = DetallePedido.objects.all()
+    pedidos = Pedido.objects.all()
+    productos = Producto.objects.all()
+
     if request.method == 'POST':
-        # Crear un detalle de pedido
         if 'crear' in request.POST:
-            id_pedido = request.POST.get('id_pedido')
-            id_producto = request.POST.get('id_producto')
-            cantidad = request.POST.get('cantidad')
-            precio_unitario = request.POST.get('precio_unitario')
+            id_pedido = request.POST['id_pedido']
+            id_producto = request.POST['id_producto']
+            cantidad = request.POST['cantidad']
+            precio_unitario = request.POST['precio_unitario']
+            subtotal = float(cantidad) * float(precio_unitario)
+
             DetallePedido.objects.create(
                 pedido_id=id_pedido,
                 producto_id=id_producto,
                 cantidad=cantidad,
-                precio_unitario=precio_unitario
+                precio_unitario=precio_unitario,
+                subtotal=subtotal
             )
-            messages.success(request, "Detalle de pedido creado con éxito.")
+            return redirect('gestionar_detalle_pedidos')
 
-        # Actualizar un detalle de pedido
-        elif 'actualizar' in request.POST:
-            id_detalle = request.POST.get('id_detalle')
-            detalle = get_object_or_404(DetallePedido, id_detalle=id_detalle)
-            detalle.cantidad = request.POST.get('cantidad')
-            detalle.precio_unitario = request.POST.get('precio_unitario')
+        if 'actualizar' in request.POST:
+            id_detalle = request.POST['id_detalle']
+            id_pedido = request.POST['id_pedido']
+            id_producto = request.POST['id_producto']
+            cantidad = request.POST['cantidad']
+            precio_unitario = request.POST['precio_unitario']
+            subtotal = float(cantidad) * float(precio_unitario)
+
+            detalle = DetallePedido.objects.get(id_detalle=id_detalle)
+            detalle.pedido_id = id_pedido
+            detalle.producto_id = id_producto
+            detalle.cantidad = cantidad
+            detalle.precio_unitario = precio_unitario
+            detalle.subtotal = subtotal
             detalle.save()
-            messages.success(request, "Detalle de pedido actualizado con éxito.")
-        
-        # Eliminar un detalle de pedido
-        elif 'eliminar' in request.POST:
-            id_detalle = request.POST.get('id_detalle')
-            detalle = get_object_or_404(DetallePedido, id_detalle=id_detalle)
-            detalle.delete()
-            messages.success(request, "Detalle de pedido eliminado con éxito.")
-    
-    detalles_pedido = DetallePedido.objects.all()
-    return render(request, 'gestionar_detalle_pedidos.html', {'detalles_pedido': detalles_pedido})
+            return redirect('gestionar_detalle_pedidos')
+
+        if 'eliminar' in request.POST:
+            id_detalle = request.POST['id_detalle']
+            DetallePedido.objects.get(id_detalle=id_detalle).delete()
+            return redirect('gestionar_detalle_pedidos')
+
+    return render(request, 'gestionar_detalle_pedidos.html', {
+        'detalles_pedido': detalles_pedido,
+        'pedidos': pedidos,
+        'productos': productos
+    })

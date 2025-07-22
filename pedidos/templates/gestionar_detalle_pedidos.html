@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalles de Pedido{% endblock %}
+
+{% block content %}
+    <h2>Lista de Detalles de Pedido</h2>
+    <ul>
+        {% for detalle in detalles_pedido %}
+            <li>
+                Detalle ID: {{ detalle.id_detalle }} - Pedido ID: {{ detalle.pedido.id_pedido }} - Producto: {{ detalle.producto.nombre }} - Cantidad: {{ detalle.cantidad }} - Subtotal: {{ detalle.subtotal }}
+                <button onclick="document.getElementById('update-form-{{ detalle.id_detalle }}').style.display = 'block'">Editar</button>
+                <form id="update-form-{{ detalle.id_detalle }}" method="POST" style="display:none;">
+                    {% csrf_token %}
+                    <input type="hidden" name="id_detalle" value="{{ detalle.id_detalle }}">
+                    <select name="id_pedido">
+                        {% for pedido in pedidos %}
+                            <option value="{{ pedido.id_pedido }}" {% if pedido.id_pedido == detalle.pedido.id_pedido %}selected{% endif %}>Pedido #{{ pedido.id_pedido }}</option>
+                        {% endfor %}
+                    </select><br>
+                    <select name="id_producto">
+                        {% for producto in productos %}
+                            <option value="{{ producto.id_producto }}" {% if producto.id_producto == detalle.producto.id_producto %}selected{% endif %}>{{ producto.nombre }}</option>
+                        {% endfor %}
+                    </select><br>
+                    <input type="number" name="cantidad" value="{{ detalle.cantidad }}" required><br>
+                    <input type="number" name="precio_unitario" value="{{ detalle.precio_unitario }}" step="0.01" required><br>
+                    <button type="submit" name="actualizar">Actualizar Detalle de Pedido</button>
+                </form>
+                <form method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="id_detalle" value="{{ detalle.id_detalle }}">
+                    <button type="submit" name="eliminar" onclick="return confirm('¿Estás seguro de eliminar este detalle de pedido?')">Eliminar</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    <hr>
+    <h2>Crear Nuevo Detalle de Pedido</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <select name="id_pedido">
+            {% for pedido in pedidos %}
+                <option value="{{ pedido.id_pedido }}">Pedido #{{ pedido.id_pedido }}</option>
+            {% endfor %}
+        </select><br>
+        <select name="id_producto">
+            {% for producto in productos %}
+                <option value="{{ producto.id_producto }}">{{ producto.nombre }}</option>
+            {% endfor %}
+        </select><br>
+        <input type="number" name="cantidad" required><br>
+        <input type="number" name="precio_unitario" step="0.01" required><br>
+        <button type="submit" name="crear">Crear Detalle de Pedido</button>
+    </form>
+{% endblock %}
