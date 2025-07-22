@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Cliente, Proveedor, Categoria, Producto, Pedido, DetallePedido
+from django.utils import timezone
 
 # Home View
 def home(request):
@@ -197,7 +198,10 @@ def gestionar_pedidos(request):
             Pedido.objects.create(
                 cliente_id=id_cliente,
                 estado=estado,
-                total=total
+                total=total,
+                fecha=timezone.now(),  # Fecha del día de hoy
+                fecha_creacion=timezone.now(),
+                fecha_actualizacion=timezone.now()
             )
             messages.success(request, "Pedido creado con éxito.")
 
@@ -207,18 +211,23 @@ def gestionar_pedidos(request):
             pedido = get_object_or_404(Pedido, id_pedido=id_pedido)
             pedido.estado = request.POST.get('estado')
             pedido.total = request.POST.get('total')
+            pedido.fecha_actualizacion = timezone.now()  # Se actualiza con la fecha actual
             pedido.save()
             messages.success(request, "Pedido actualizado con éxito.")
-        
+
         # Eliminar un pedido
         elif 'eliminar' in request.POST:
             id_pedido = request.POST.get('id_pedido')
             pedido = get_object_or_404(Pedido, id_pedido=id_pedido)
             pedido.delete()
             messages.success(request, "Pedido eliminado con éxito.")
-    
-    pedidos = Pedido.objects.all()
-    return render(request, 'gestionar_pedidos.html', {'pedidos': pedidos})
+
+    pedidos = Pedido.objects.select_related('cliente').all()
+    clientes = Cliente.objects.all()
+    return render(request, 'gestionar_pedidos.html', {
+        'pedidos': pedidos,
+        'clientes': clientes
+    })
 
 # ---------------------------------------------------------
 # Vistas para Detalle de Pedido

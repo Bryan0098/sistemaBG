@@ -1,55 +1,185 @@
 {% extends 'base.html' %}
 
-{% block title %}Detalles de Pedido{% endblock %}
+{% block title %}Gestionar Detalles de Pedido{% endblock %}
 
 {% block content %}
-    <h2>Lista de Detalles de Pedido</h2>
-    <ul>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Detalles de Pedido</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalDetalle">+ Nuevo Detalle</button>
+</div>
+
+<table id="tabla-detalles" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Pedido</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
         {% for detalle in detalles_pedido %}
-            <li>
-                Detalle ID: {{ detalle.id_detalle }} - Pedido ID: {{ detalle.pedido.id_pedido }} - Producto: {{ detalle.producto.nombre }} - Cantidad: {{ detalle.cantidad }} - Subtotal: {{ detalle.subtotal }}
-                <button onclick="document.getElementById('update-form-{{ detalle.id_detalle }}').style.display = 'block'">Editar</button>
-                <form id="update-form-{{ detalle.id_detalle }}" method="POST" style="display:none;">
+        <tr>
+            <td>{{ detalle.id_detalle }}</td>
+            <td>#{{ detalle.pedido.id_pedido }}</td>
+            <td>{{ detalle.producto.nombre }}</td>
+            <td>{{ detalle.cantidad }}</td>
+            <td>{{ detalle.precio_unitario }}</td>
+            <td>{{ detalle.subtotal }}</td>
+            <td>
+                <button class="btn btn-warning btn-sm btn-editar"
+                        data-id="{{ detalle.id_detalle }}"
+                        data-id_pedido="{{ detalle.pedido.id_pedido }}"
+                        data-id_producto="{{ detalle.producto.id_producto }}"
+                        data-cantidad="{{ detalle.cantidad }}"
+                        data-precio="{{ detalle.precio_unitario }}">
+                    Editar
+                </button>
+
+                <form method="POST" class="d-inline form-eliminar">
                     {% csrf_token %}
                     <input type="hidden" name="id_detalle" value="{{ detalle.id_detalle }}">
-                    <select name="id_pedido">
-                        {% for pedido in pedidos %}
-                            <option value="{{ pedido.id_pedido }}" {% if pedido.id_pedido == detalle.pedido.id_pedido %}selected{% endif %}>Pedido #{{ pedido.id_pedido }}</option>
-                        {% endfor %}
-                    </select><br>
-                    <select name="id_producto">
-                        {% for producto in productos %}
-                            <option value="{{ producto.id_producto }}" {% if producto.id_producto == detalle.producto.id_producto %}selected{% endif %}>{{ producto.nombre }}</option>
-                        {% endfor %}
-                    </select><br>
-                    <input type="number" name="cantidad" value="{{ detalle.cantidad }}" required><br>
-                    <input type="number" name="precio_unitario" value="{{ detalle.precio_unitario }}" step="0.01" required><br>
-                    <button type="submit" name="actualizar">Actualizar Detalle de Pedido</button>
+                    <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
                 </form>
-                <form method="POST" style="display:inline;">
-                    {% csrf_token %}
-                    <input type="hidden" name="id_detalle" value="{{ detalle.id_detalle }}">
-                    <button type="submit" name="eliminar" onclick="return confirm('¿Estás seguro de eliminar este detalle de pedido?')">Eliminar</button>
-                </form>
-            </li>
+            </td>
+        </tr>
         {% endfor %}
-    </ul>
-    <hr>
-    <h2>Crear Nuevo Detalle de Pedido</h2>
-    <form method="POST">
-        {% csrf_token %}
-        <select name="id_pedido">
-            {% for pedido in pedidos %}
-                <option value="{{ pedido.id_pedido }}">Pedido #{{ pedido.id_pedido }}</option>
+    </tbody>
+</table>
+
+<!-- Modal Crear/Editar Detalle -->
+<div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="form-detalle" method="POST" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Detalle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="id_detalle" id="id_detalle">
+
+                <div class="mb-3">
+                    <label for="id_pedido" class="form-label">Pedido</label>
+                    <select name="id_pedido" id="id_pedido" class="form-select" required>
+                        <option value="">Seleccione un pedido</option>
+                        {% for pedido in pedidos %}
+                        <option value="{{ pedido.id_pedido }}">Pedido #{{ pedido.id_pedido }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_producto" class="form-label">Producto</label>
+                    <select name="id_producto" id="id_producto" class="form-select" required>
+                        <option value="">Seleccione un producto</option>
+                        {% for producto in productos %}
+                        <option value="{{ producto.id_producto }}">{{ producto.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="cantidad" class="form-label">Cantidad</label>
+                    <input type="number" class="form-control" name="cantidad" id="cantidad" required>
+                </div>
+                <div class="mb-3">
+                    <label for="precio_unitario" class="form-label">Precio Unitario</label>
+                    <input type="number" step="0.01" class="form-control" name="precio_unitario" id="precio_unitario" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" name="crear" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script>
+    const idioma_es = "{{ request.scheme }}://{{ request.get_host }}{% static 'assets/plugins/datatables/lang/es-ES.json' %}";
+
+    $(document).ready(function () {
+        $('#tabla-detalles').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: 'excelHtml5', text: 'Exportar a Excel', className: 'btn btn-success btn-sm' },
+                { extend: 'pdfHtml5', text: 'Exportar a PDF', className: 'btn btn-danger btn-sm' },
+                { extend: 'print', text: 'Imprimir', className: 'btn btn-info btn-sm' }
+            ],
+            language: {
+                url: idioma_es
+            }
+        });
+
+        $('#form-detalle').validate({
+            errorClass: 'is-invalid',
+            validClass: 'is-valid',
+            errorElement: 'div',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                if (element.parent('.input-group').length) {
+                    error.insertAfter(element.parent());
+                } else {
+                    error.insertAfter(element);
+                }
+            },
+            highlight: function (element) {
+                $(element).addClass('is-invalid').removeClass('is-valid');
+            },
+            unhighlight: function (element) {
+                $(element).removeClass('is-invalid').addClass('is-valid');
+            }
+        });
+
+        $('.form-eliminar').submit(function (e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+
+        $('.btn-editar').click(function () {
+            $('#id_detalle').val($(this).data('id'));
+            $('#id_pedido').val($(this).data('id_pedido'));
+            $('#id_producto').val($(this).data('id_producto'));
+            $('#cantidad').val($(this).data('cantidad'));
+            $('#precio_unitario').val($(this).data('precio'));
+            $('button[name="crear"]').attr('name', 'actualizar');
+            $('#modalDetalle .modal-title').text('Editar Detalle');
+            $('#modalDetalle').modal('show');
+        });
+
+        $('#modalDetalle').on('hidden.bs.modal', function () {
+            $('#form-detalle')[0].reset();
+            $('#id_detalle').val('');
+            $('#modalDetalle .modal-title').text('Agregar Detalle');
+            $('button[name="actualizar"]').attr('name', 'crear');
+        });
+
+        {% if messages %}
+            {% for message in messages %}
+                toastr.success("{{ message|escapejs }}");
             {% endfor %}
-        </select><br>
-        <select name="id_producto">
-            {% for producto in productos %}
-                <option value="{{ producto.id_producto }}">{{ producto.nombre }}</option>
-            {% endfor %}
-        </select><br>
-        <input type="number" name="cantidad" required><br>
-        <input type="number" name="precio_unitario" step="0.01" required><br>
-        <button type="submit" name="crear">Crear Detalle de Pedido</button>
-    </form>
+        {% endif %}
+    });
+</script>
 {% endblock %}

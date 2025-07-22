@@ -1,70 +1,178 @@
 {% extends 'base.html' %}
 
-{% block title %}Gestionar Pedidos - Portal{% endblock %}
+{% block title %}Gestionar Pedidos{% endblock %}
 
 {% block content %}
-<h1>Gestionar Pedidos</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Pedidos</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPedido">+ Nuevo</button>
+</div>
 
-<!-- Mensajes de éxito o error -->
-{% if messages %}
-    <ul>
-        {% for message in messages %}
-            <li>{{ message }}</li>
+<table id="tabla-pedidos" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Total</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pedido in pedidos %}
+        <tr>
+            <td>{{ pedido.id_pedido }}</td>
+            <td>{{ pedido.cliente.nombre }} {{ pedido.cliente.apellido }}</td>
+            <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
+            <td>{{ pedido.estado }}</td>
+            <td>${{ pedido.total }}</td>
+            <td>
+                <button class="btn btn-warning btn-sm btn-editar" 
+                        data-id="{{ pedido.id_pedido }}" 
+                        data-cliente="{{ pedido.cliente.id_cliente }}"
+                        data-estado="{{ pedido.estado }}" 
+                        data-total="{{ pedido.total }}">
+                        Editar</button>
+                <form method="POST" class="d-inline form-eliminar">
+                    {% csrf_token %}
+                    <input type="hidden" name="id_pedido" value="{{ pedido.id_pedido }}">
+                    <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
+                </form>
+            </td>
+        </tr>
         {% endfor %}
-    </ul>
-{% endif %}
+    </tbody>
+</table>
 
-<!-- Formulario para Crear Pedido -->
-<h2>Crear Pedido</h2>
-<form method="POST">
-    {% csrf_token %}
-    <label for="cliente">Cliente</label>
-    <select id="cliente" name="id_cliente">
-        {% for cliente in clientes %}
-            <option value="{{ cliente.id_cliente }}">{{ cliente.nombre }} {{ cliente.apellido }}</option>
-        {% endfor %}
-    </select><br>
+<!-- Modal para Crear/Editar Pedido -->
+<div class="modal fade" id="modalPedido" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="form-pedido" method="POST" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Pedido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="id_pedido" id="id_pedido">
+                <div class="mb-3">
+                    <label for="id_cliente" class="form-label">Cliente</label>
+                    <select name="id_cliente" id="id_cliente" class="form-select" required>
+                        {% for cliente in clientes %}
+                            <option value="{{ cliente.id_cliente }}">{{ cliente.nombre }} {{ cliente.apellido }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select name="estado" id="estado" class="form-select" required>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Enviado">Enviado</option>
+                        <option value="Cancelado">Cancelado</option>
+                        <option value="Entregado">Entregado</option>
+                        <option value="Procesando">Procesando</option>
+                        <option value="Completado">Completado</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="total" class="form-label">Total ($)</label>
+                    <input type="number" class="form-control" name="total" id="total" step="0.01" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" name="crear" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
 
-    <label for="estado">Estado</label>
-    <input type="text" id="estado" name="estado" required><br>
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        $('#tabla-pedidos').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: 'excelHtml5', text: 'Exportar a Excel', className: 'btn btn-success btn-sm' },
+                { extend: 'pdfHtml5', text: 'Exportar a PDF', className: 'btn btn-danger btn-sm' },
+                { extend: 'print', text: 'Imprimir', className: 'btn btn-info btn-sm' }
+            ],
+            language: { url: "{{ '/static/assets/plugins/datatables/lang/es-ES.json' }}" }
+        });
 
-    <label for="total">Total</label>
-    <input type="number" id="total" name="total" step="0.01" required><br>
+        $('#form-pedido').validate({
+            errorClass: 'is-invalid',
+            validClass: 'is-valid',
+            errorElement: 'div',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                if (element.parent('.input-group').length) {
+                    error.insertAfter(element.parent());
+                } else {
+                    error.insertAfter(element);
+                }
+            },
+            highlight: function (element) {
+                $(element).addClass('is-invalid').removeClass('is-valid');
+            },
+            unhighlight: function (element) {
+                $(element).removeClass('is-invalid').addClass('is-valid');
+            },
+            rules: {
+                id_cliente: { required: true },
+                estado: { required: true },
+                total: { required: true, number: true }
+            },
+            messages: {
+                id_cliente: "Seleccione el cliente",
+                estado: "Seleccione el estado",
+                total: "Ingrese el total"
+            }
+        });
 
-    <button type="submit" name="crear">Crear Pedido</button>
-</form>
+        $('.form-eliminar').submit(function (e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
 
-<hr>
+        $('.btn-editar').click(function () {
+            $('#id_pedido').val($(this).data('id'));
+            $('#id_cliente').val($(this).data('cliente'));
+            $('#estado').val($(this).data('estado'));
+            $('#total').val($(this).data('total'));
+            $('button[name="crear"]').attr('name', 'actualizar');
+            $('#modalPedido .modal-title').text('Editar Pedido');
+            $('#modalPedido').modal('show');
+        });
 
-<!-- Lista de Pedidos -->
-<h2>Lista de Pedidos</h2>
-<ul>
-    {% for pedido in pedidos %}
-        <li>
-            Pedido ID: {{ pedido.id_pedido }} - Cliente: {{ pedido.cliente.nombre }} {{ pedido.cliente.apellido }} - Estado: {{ pedido.estado }} - Total: {{ pedido.total }}
-            
-            <!-- Formulario para Actualizar Pedido -->
-            <button onclick="document.getElementById('update-form-{{ pedido.id_pedido }}').style.display = 'block'">Editar</button>
-            <form id="update-form-{{ pedido.id_pedido }}" method="POST" style="display:none;">
-                {% csrf_token %}
-                <input type="hidden" name="id_pedido" value="{{ pedido.id_pedido }}">
-                <select name="id_cliente">
-                    {% for cliente in clientes %}
-                        <option value="{{ cliente.id_cliente }}" {% if cliente.id_cliente == pedido.cliente.id_cliente %}selected{% endif %}>{{ cliente.nombre }} {{ cliente.apellido }}</option>
-                    {% endfor %}
-                </select><br>
-                <input type="text" name="estado" value="{{ pedido.estado }}" required><br>
-                <input type="number" name="total" value="{{ pedido.total }}" step="0.01" required><br>
-                <button type="submit" name="actualizar">Actualizar Pedido</button>
-            </form>
+        $('#modalPedido').on('hidden.bs.modal', function () {
+            $('#form-pedido')[0].reset();
+            $('#id_pedido').val('');
+            $('#modalPedido .modal-title').text('Agregar Pedido');
+            $('button[name="actualizar"]').attr('name', 'crear');
+        });
 
-            <!-- Formulario para Eliminar Pedido -->
-            <form method="POST" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="id_pedido" value="{{ pedido.id_pedido }}">
-                <button type="submit" name="eliminar" onclick="return confirm('¿Estás seguro de eliminar este pedido?')">Eliminar</button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
+        {% if messages %}
+            {% for message in messages %}
+                toastr.success("{{ message|escapejs }}");
+            {% endfor %}
+        {% endif %}
+    });
+</script>
 {% endblock %}
