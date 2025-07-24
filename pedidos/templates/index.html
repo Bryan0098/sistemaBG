@@ -5,8 +5,22 @@
 
 {% block content %}
 <style>
+    body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url("{% static 'assets/images/log.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(8px);
+            z-index: -1;
+        }
     .welcome-section {
-        background-image: url("{% static 'assets/images/dd.png' %}");
+        background-image: url("{% static 'assets/images/dd4.jpg' %}");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -23,7 +37,7 @@
     }
 </style>
 
-<div class="welcome-section text-center">
-    <h2>Bienvenido al portal</h2>
+<div class="welcome-section" style="align-items: flex-start; padding-top: 0px;">
+    <h2 style='color:black;'>Bienvenido al Portal de Pedidos</h2>
 </div>
 {% endblock %}
