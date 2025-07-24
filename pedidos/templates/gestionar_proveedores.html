@@ -81,9 +81,9 @@
         $('#tabla-proveedores').DataTable({
             dom: 'Bfrtip',
             buttons: [
-                { extend: 'excelHtml5', text: 'Exportar a Excel', className: 'btn btn-success btn-sm' },
-                { extend: 'pdfHtml5', text: 'Exportar a PDF', className: 'btn btn-danger btn-sm' },
-                { extend: 'print', text: 'Imprimir', className: 'btn btn-info btn-sm' }
+            { extend: 'excelHtml5', text: 'Exportar a Excel', className: 'btn btn-success btn-sm', exportOptions: { columns: ':not(:last-child)' } },
+            { extend: 'pdfHtml5', text: 'Exportar a PDF', className: 'btn btn-danger btn-sm', exportOptions: { columns: ':not(:last-child)' } },
+            { extend: 'print', text: 'Imprimir', className: 'btn btn-info btn-sm', exportOptions: { columns: ':not(:last-child)' } }
             ],
             language: { url: "{{ '/static/assets/plugins/datatables/lang/es-ES.json' }}" }
         });

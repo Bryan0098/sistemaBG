@@ -4,106 +4,106 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2 class="mb-4 text-center">Dashboard de KPIs</h2>
+  <h1 class="mb-4 text-center">Dashboard de KPIs</h1>
   <div class="row g-4">
 
     <!-- Pedidos por Mes -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Pedidos por Mes</h5>
-          <canvas id="pedidosMesChart" style="max-height: 300px;" height="220"></canvas>
-        </div>
+      <div class="card" style="box-shadow: 0 8px 40px 0 rgba(78,115,223,0.45), 0 3px 10px 0 rgba(30,144,255,0.20);">
+      <div class="card-body">
+      <h5 class="card-title">Pedidos por Mes</h5>
+      <canvas id="pedidosMesChart" style="max-height: 300px;" height="220"></canvas>
+      </div>
       </div>
     </div>
 
     <!-- Ventas por Mes -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Ventas por Mes</h5>
-          <canvas id="ventasMesChart" style="max-height: 300px;" height="220"></canvas>
-        </div>
+      <div class="card" style="box-shadow: 0 8px 40px 0 rgba(28,200,138,0.45), 0 3px 10px 0 rgba(40,167,69,0.20);">
+      <div class="card-body">
+      <h5 class="card-title">Ventas por Mes</h5>
+      <canvas id="ventasMesChart" style="max-height: 300px;" height="220"></canvas>
+      </div>
       </div>
     </div>
 
     <!-- Pedidos por Día -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Pedidos por Día</h5>
-          <canvas id="pedidosDiaChart" style="max-height: 300px;" height="220"></canvas>
-        </div>
+      <div class="card" style="box-shadow: 0 8px 40px 0 rgba(246,194,62,0.45), 0 3px 10px 0 rgba(255,193,7,0.20);">
+      <div class="card-body">
+      <h5 class="card-title">Pedidos por Día</h5>
+      <canvas id="pedidosDiaChart" style="max-height: 300px;" height="220"></canvas>
+      </div>
       </div>
     </div>
 
     <!-- Clientes Nuevos por Mes -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Clientes Nuevos</h5>
-          <canvas id="clientesMesChart" style="max-height: 300px;" height="220"></canvas>
-        </div>
+      <div class="card" style="box-shadow: 0 8px 40px 0 rgba(54,185,204,0.45), 0 3px 10px 0 rgba(23,162,184,0.20);">
+      <div class="card-body">
+      <h5 class="card-title">Clientes Nuevos</h5>
+      <canvas id="clientesMesChart" style="max-height: 300px;" height="220"></canvas>
+      </div>
       </div>
     </div>
 
     <!-- Pedidos por Estado -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Pedidos por Estado</h5>
-          <canvas id="estadoPedidosChart" style="max-height: 300px;" height="220"></canvas>
-        </div>
+      <div class="card" style="box-shadow: 0 8px 40px 0 rgba(133,135,150,0.45), 0 3px 10px 0 rgba(108,117,125,0.20);">
+      <div class="card-body">
+      <h5 class="card-title">Pedidos por Estado</h5>
+      <canvas id="estadoPedidosChart" style="max-height: 300px;" height="220"></canvas>
+      </div>
       </div>
     </div>
 
     <!-- Productos más Vendidos -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Top Productos Vendidos</h5>
-          <canvas id="productosVendidosChart" style="max-height: 300px;" height="220"></canvas>
-        </div>
+      <div class="card" style="box-shadow: 0 8px 40px 0 rgba(230,74,59,0.40), 0 3px 10px 0 rgba(246,194,62,0.30);">
+      <div class="card-body">
+      <h5 class="card-title">Top Productos Vendidos</h5>
+      <canvas id="productosVendidosChart" style="max-height: 300px;" height="220"></canvas>
+      </div>
       </div>
     </div>
 
     <!-- Categorías con Más Productos -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Categorías con Más Productos</h5>
-          <canvas id="categoriasChart" style="max-height: 300px;" height="220"></canvas>
-        </div>
+      <div class="card" style="box-shadow: 0 8px 40px 0 rgba(78,115,223,0.40), 0 3px 10px 0 rgba(28,200,138,0.30);">
+      <div class="card-body">
+      <h5 class="card-title">Categorías con Más Productos</h5>
+      <canvas id="categoriasChart" style="max-height: 300px;" height="220"></canvas>
+      </div>
       </div>
     </div>
 
     <!-- Clientes Top -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Clientes con Mayor Gasto</h5>
-          <canvas id="clientesTopChart" style="max-height: 300px;" height="220"></canvas>
-        </div>
+      <div class="card" style="box-shadow: 0 8px 40px 0 rgba(133,135,150,0.45), 0 3px 10px 0 rgba(54,185,204,0.20);">
+      <div class="card-body">
+      <h5 class="card-title">Clientes con Mayor Gasto</h5>
+      <canvas id="clientesTopChart" style="max-height: 300px;" height="220"></canvas>
+      </div>
       </div>
     </div>
 
     <!-- Proveedores Más Usados -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Proveedores Más Usados</h5>
-          <canvas id="proveedoresTopChart" style="max-height: 300px;" height="220"></canvas>
-        </div>
+      <div class="card" style="box-shadow: 0 8px 40px 0 rgba(32,201,151,0.45), 0 3px 10px 0 rgba(40,167,69,0.20);">
+      <div class="card-body">
+      <h5 class="card-title">Proveedores Más Usados</h5>
+      <canvas id="proveedoresTopChart" style="max-height: 300px;" height="220"></canvas>
+      </div>
       </div>
     </div>
 
     <!-- Productos con Menor Stock -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Productos con Menor Stock</h5>
-          <canvas id="stockBajoChart" style="max-height: 300px;" height="220"></canvas>
-        </div>
+      <div class="card" style="box-shadow: 0 8px 40px 0 rgba(231,74,59,0.45), 0 3px 10px 0 rgba(246,194,62,0.20);">
+      <div class="card-body">
+      <h5 class="card-title">Productos con Menor Stock</h5>
+      <canvas id="stockBajoChart" style="max-height: 300px;" height="220"></canvas>
+      </div>
       </div>
     </div>
 
