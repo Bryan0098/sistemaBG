@@ -242,41 +242,50 @@ def gestionar_detalle_pedidos(request):
 
     if request.method == 'POST':
         if 'crear' in request.POST:
-            id_pedido = request.POST['id_pedido']
-            id_producto = request.POST['id_producto']
-            cantidad = request.POST['cantidad']
-            precio_unitario = request.POST['precio_unitario']
-            subtotal = float(cantidad) * float(precio_unitario)
+            try:
+                id_pedido = int(request.POST['id_pedido'])
+                id_producto = int(request.POST['id_producto'])
+                cantidad = int(request.POST['cantidad'])
+                precio_unitario = float(request.POST['precio_unitario'])
+                subtotal = cantidad * precio_unitario
 
-            DetallePedido.objects.create(
-                pedido_id=id_pedido,
-                producto_id=id_producto,
-                cantidad=cantidad,
-                precio_unitario=precio_unitario,
-                subtotal=subtotal
-            )
+                DetallePedido.objects.create(
+                    pedido_id=id_pedido,
+                    producto_id=id_producto,
+                    cantidad=cantidad,
+                    precio_unitario=precio_unitario,
+                    subtotal=subtotal
+                )
+            except (ValueError, TypeError) as e:
+                print(f"Error al crear detalle: {e}")
             return redirect('gestionar_detalle_pedidos')
 
         if 'actualizar' in request.POST:
-            id_detalle = request.POST['id_detalle']
-            id_pedido = request.POST['id_pedido']
-            id_producto = request.POST['id_producto']
-            cantidad = request.POST['cantidad']
-            precio_unitario = request.POST['precio_unitario']
-            subtotal = float(cantidad) * float(precio_unitario)
+            try:
+                id_detalle = int(request.POST['id_detalle'])
+                id_pedido = int(request.POST['id_pedido'])
+                id_producto = int(request.POST['id_producto'])
+                cantidad = int(request.POST['cantidad'])
+                precio_unitario = float(request.POST['precio_unitario'])
+                subtotal = cantidad * precio_unitario
 
-            detalle = DetallePedido.objects.get(id_detalle=id_detalle)
-            detalle.pedido_id = id_pedido
-            detalle.producto_id = id_producto
-            detalle.cantidad = cantidad
-            detalle.precio_unitario = precio_unitario
-            detalle.subtotal = subtotal
-            detalle.save()
+                detalle = DetallePedido.objects.get(id_detalle=id_detalle)
+                detalle.pedido_id = id_pedido
+                detalle.producto_id = id_producto
+                detalle.cantidad = cantidad
+                detalle.precio_unitario = precio_unitario
+                detalle.subtotal = subtotal
+                detalle.save()
+            except (ValueError, TypeError, DetallePedido.DoesNotExist) as e:
+                print(f"Error al actualizar detalle: {e}")
             return redirect('gestionar_detalle_pedidos')
 
         if 'eliminar' in request.POST:
-            id_detalle = request.POST['id_detalle']
-            DetallePedido.objects.get(id_detalle=id_detalle).delete()
+            try:
+                id_detalle = int(request.POST['id_detalle'])
+                DetallePedido.objects.get(id_detalle=id_detalle).delete()
+            except DetallePedido.DoesNotExist:
+                print("Detalle no encontrado para eliminar.")
             return redirect('gestionar_detalle_pedidos')
 
     return render(request, 'gestionar_detalle_pedidos.html', {
