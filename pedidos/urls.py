@@ -22,4 +22,7 @@ urlpatterns = [
     
     # Rutas para gestionar Detalles de Pedido
     path('detalles_pedido/', views.gestionar_detalle_pedidos, name='gestionar_detalle_pedidos'),
+
+    path('charts/', views.charts, name='charts'),
+    
 ]

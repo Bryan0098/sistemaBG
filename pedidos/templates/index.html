@@ -1,10 +1,29 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Inicio - Portal{% endblock %}
 
 {% block content %}
-    <div class="text-center">
-        <h2>Bienvenido al portal</h2>
-        <p>Contenido de bienvenida aquí.</p>
-    </div>
+<style>
+    .welcome-section {
+        background-image: url("{% static 'assets/images/dd.png' %}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 85vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-shadow: 1px 1px 3px #00000080;
+    }
+    .welcome-section h2 {
+        color: white;
+        font-size: 3rem;
+        font-weight: bold;
+    }
+</style>
+
+<div class="welcome-section text-center">
+    <h2>Bienvenido al portal</h2>
+</div>
 {% endblock %}

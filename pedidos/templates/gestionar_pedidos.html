@@ -79,6 +79,11 @@
                     <label for="total" class="form-label">Total ($)</label>
                     <input type="number" class="form-control" name="total" id="total" step="0.01" required>
                 </div>
+                <div class="mb-3">
+                    <label for="fecha" class="form-label">Fecha del Pedido</label>
+                    <input type="text" class="form-control" value="{{ now|date:'d/m/Y H:i' }}" disabled>
+                    <input type="hidden" name="fecha" value="{{ now|date:'Y-m-d H:i:s' }}">
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

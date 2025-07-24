@@ -65,19 +65,19 @@
                 <div class="row justify-content-between align-items-center">
                     <div class="col-auto">
                         <a id="sidepanel-toggler" class="sidepanel-toggler d-inline-block d-xl-none" href="#">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" role="img"><title>Menu</title><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" role="img">
+                                <title>Menu</title>
+                                <path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path>
+                            </svg>
                         </a>
                     </div>
-                    <div class="app-utility-item app-user-dropdown dropdown">
-                        <a class="dropdown-toggle" id="user-dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">
-                            <img src="{% static 'assets/images/user.png' %}" alt="user profile">
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="user-dropdown-toggle">
-                            <li><a class="dropdown-item" href="account.html">Account</a></li>
-                            <li><a class="dropdown-item" href="settings.html">Settings</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="login.html">Log Out</a></li>
-                        </ul>
+
+                    <div class="col text-center">
+                        <h4 class="mb-0 fw-bold">QUIBAUTO</h4>
+                    </div>
+
+                    <div class="col-auto">
+                        <!-- Aquí puedes dejar el dropdown u otro contenido si lo necesitas -->
                     </div>
                 </div>
             </div>
@@ -102,6 +102,12 @@
                         <a class="nav-link {% if current == 'home' %}active{% endif %}" href="{% url 'home' %}">
                             <span class="nav-icon"><i class="bi bi-house-door-fill"></i></span>
                             <span class="nav-link-text">Inicio</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if current == 'charts' %}active{% endif %}" href="{% url 'charts' %}">
+                            <span class="nav-icon"><i class="bi bi-graph-up-arrow"></i></span>
+                            <span class="nav-link-text">Dashboard</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -141,7 +147,7 @@
                         </a>
                     </li>
                     {% endwith %}
-                    <li class="nav-item">
+<!--                     <li class="nav-item">
                         <a class="nav-link" href="#">
                             <span class="nav-icon"><i class="bi bi-person-badge-fill"></i></span>
                             <span class="nav-link-text">Usuarios</span>
@@ -152,11 +158,11 @@
                             <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span>
                             <span class="nav-link-text">Reportes</span>
                         </a>
-                    </li>
+                    </li> -->
                 </ul>
             </nav>
 
-            <div class="app-sidepanel-footer">
+<!--             <div class="app-sidepanel-footer">
                 <nav class="app-nav app-nav-footer">
                     <ul class="app-menu footer-menu list-unstyled">
                         <li class="nav-item">
@@ -167,7 +173,9 @@
                         </li>
                     </ul>
                 </nav>
-            </div>
+            </div> -->
+
+
         </div>
     </div>
 </header>
@@ -179,9 +187,37 @@
     </div>
 </main>
 
-<footer class="app-footer">
-    <img src="{% static 'assets/images/user.png' %}" alt="user profile">
+
+<footer class="app-footer bg-light py-3 border-top w-100">
+    <div class="container-fluid">
+        <div class="row align-items-center text-muted">
+
+            <!-- Izquierda -->
+            <div class="col-md-4 text-start">
+                &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;
+                <small>© 2025 Desarrollado por <strong>Bryan Guayta</strong></small>
+            </div>
+
+            <!-- Centro -->
+            <div class="col-md-4 text-center">
+                <small><i class="bi bi-geo-alt-fill"></i> Latacunga - Cotopaxi</small>
+            </div>
+
+            <!-- Derecha -->
+            <div class="col-md-4 text-end">
+                <img src="{% static 'assets/images/user.png' %}" alt="user profile" width="32" height="32" class="rounded-circle shadow-sm">
+            </div>
+
+        </div>
+    </div>
 </footer>
+
+
+
+
 <!-- jQuery -->
 <script src="{% static 'assets/plugins/jquery/jquery-3.6.0.min.js' %}"></script>
 

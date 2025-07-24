@@ -1,85 +1,193 @@
 {% extends 'base.html' %}
 
-{% block title %}Gestionar Productos - Portal{% endblock %}
+{% block title %}Gestionar Productos{% endblock %}
 
 {% block content %}
-<h1>Gestionar Productos</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Productos</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalProducto">+ Nuevo</button>
+</div>
 
-<!-- Mensajes de éxito o error -->
-{% if messages %}
-    <ul>
-        {% for message in messages %}
-            <li>{{ message }}</li>
+<!-- Reemplaza todo el bloque de la tabla -->
+<table id="tabla-productos" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Stock Mínimo</th>
+            <th>Categoría</th>
+            <th>Proveedor</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for producto in productos %}
+        <tr>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.descripcion }}</td>
+            <td>${{ producto.precio }}</td>
+            <td class="{% if producto.stock < 5 %}text-danger fw-bold{% endif %}">
+                {{ producto.stock }}
+            </td>
+            <td>{{ producto.stock_minimo }}</td>
+            <td>{{ producto.categoria.nombre }}</td>
+            <td>{{ producto.proveedor.nombre }}</td>
+            <td>
+                <button class="btn btn-warning btn-sm btn-editar"
+                        data-id="{{ producto.id_producto }}"
+                        data-nombre="{{ producto.nombre }}"
+                        data-descripcion="{{ producto.descripcion }}"
+                        data-precio="{{ producto.precio }}"
+                        data-stock="{{ producto.stock }}"
+                        data-categoria="{{ producto.categoria.id_categoria }}"
+                        data-proveedor="{{ producto.proveedor.id_proveedor }}">
+                    Editar
+                </button>
+                <form method="POST" class="d-inline form-eliminar">
+                    {% csrf_token %}
+                    <input type="hidden" name="id_producto" value="{{ producto.id_producto }}">
+                    <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
+                </form>
+            </td>
+        </tr>
         {% endfor %}
-    </ul>
-{% endif %}
+    </tbody>
+</table>
 
-<!-- Formulario para Crear Producto -->
-<h2>Crear Producto</h2>
-<form method="POST">
-    {% csrf_token %}
-    <label for="nombre">Nombre</label>
-    <input type="text" id="nombre" name="nombre" required><br>
 
-    <label for="descripcion">Descripción</label>
-    <textarea id="descripcion" name="descripcion" required></textarea><br>
+<!-- Modal Crear/Editar -->
+<div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="form-producto" method="POST" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="id_producto" id="id_producto">
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" class="form-control" name="nombre" id="nombre" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-control" name="descripcion" id="descripcion" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Precio</label>
+                    <input type="number" class="form-control" name="precio" id="precio" step="0.01" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Stock</label>
+                    <input type="number" class="form-control" name="stock" id="stock" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Stock Mínimo</label>
+                    <input type="number" class="form-control" id="stock_minimo" name="stock_minimo" value="5" readonly disabled>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Categoría</label>
+                    <select name="categoria" id="categoria" class="form-select" required>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria.id_categoria }}">{{ categoria.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Proveedor</label>
+                    <select name="proveedor" id="proveedor" class="form-select" required>
+                        {% for proveedor in proveedores %}
+                            <option value="{{ proveedor.id_proveedor }}">{{ proveedor.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" name="crear" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
 
-    <label for="precio">Precio</label>
-    <input type="number" id="precio" name="precio" step="0.01" required><br>
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        $('#tabla-productos').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: 'excelHtml5', text: 'Exportar a Excel', className: 'btn btn-success btn-sm' },
+                { extend: 'pdfHtml5', text: 'Exportar a PDF', className: 'btn btn-danger btn-sm' },
+                { extend: 'print', text: 'Imprimir', className: 'btn btn-info btn-sm' }
+            ],
+            language: { url: "{{ '/static/assets/plugins/datatables/lang/es-ES.json' }}" }
+        });
 
-    <label for="stock">Stock</label>
-    <input type="number" id="stock" name="stock" required><br>
+        $('#form-producto').validate({
+            errorClass: 'is-invalid',
+            validClass: 'is-valid',
+            errorElement: 'div',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                error.insertAfter(element);
+            },
+            highlight: function (element) {
+                $(element).addClass('is-invalid').removeClass('is-valid');
+            },
+            unhighlight: function (element) {
+                $(element).removeClass('is-invalid').addClass('is-valid');
+            }
+        });
 
-    <label for="stock_minimo">Stock Mínimo</label>
-    <input type="number" id="stock_minimo" name="stock_minimo" required><br>
+        $('.btn-editar').click(function () {
+            $('#id_producto').val($(this).data('id'));
+            $('#nombre').val($(this).data('nombre'));
+            $('#descripcion').val($(this).data('descripcion'));
+            $('#precio').val($(this).data('precio'));
+            $('#stock').val($(this).data('stock'));
+            $('#stock_minimo').val(5);  // Siempre 5
+            $('#categoria').val($(this).data('categoria'));
+            $('#proveedor').val($(this).data('proveedor'));
+            $('button[name="crear"]').attr('name', 'actualizar');
+            $('#modalProducto .modal-title').text('Editar Producto');
+            $('#modalProducto').modal('show');
+        });
 
-    <label for="categoria">Categoría</label>
-    <select id="categoria" name="categoria">
-        {% for categoria in categorias %}
-            <option value="{{ categoria.id_categoria }}">{{ categoria.nombre }}</option>
-        {% endfor %}
-    </select><br>
+        $('#modalProducto').on('hidden.bs.modal', function () {
+            $('#form-producto')[0].reset();
+            $('#id_producto').val('');
+            $('button[name="actualizar"]').attr('name', 'crear');
+            $('#modalProducto .modal-title').text('Agregar Producto');
+        });
 
-    <label for="proveedor">Proveedor</label>
-    <select id="proveedor" name="proveedor">
-        {% for proveedor in proveedores %}
-            <option value="{{ proveedor.id_proveedor }}">{{ proveedor.nombre }}</option>
-        {% endfor %}
-    </select><br>
+        $('.form-eliminar').submit(function (e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
 
-    <button type="submit" name="crear">Crear Producto</button>
-</form>
-
-<hr>
-
-<!-- Lista de Productos -->
-<h2>Lista de Productos</h2>
-<ul>
-    {% for producto in productos %}
-        <li>
-            {{ producto.nombre }} - {{ producto.descripcion }} - {{ producto.precio }} - {{ producto.stock }}
-            
-            <!-- Formulario para Actualizar Producto -->
-            <button onclick="document.getElementById('update-form-{{ producto.id_producto }}').style.display = 'block'">Editar</button>
-            <form id="update-form-{{ producto.id_producto }}" method="POST" style="display:none;">
-                {% csrf_token %}
-                <input type="hidden" name="id_producto" value="{{ producto.id_producto }}">
-                <input type="text" name="nombre" value="{{ producto.nombre }}" required><br>
-                <textarea name="descripcion" required>{{ producto.descripcion }}</textarea><br>
-                <input type="number" name="precio" value="{{ producto.precio }}" step="0.01" required><br>
-                <input type="number" name="stock" value="{{ producto.stock }}" required><br>
-                <input type="number" name="stock_minimo" value="{{ producto.stock_minimo }}" required><br>
-                <button type="submit" name="actualizar">Actualizar Producto</button>
-            </form>
-
-            <!-- Formulario para Eliminar Producto -->
-            <form method="POST" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="id_producto" value="{{ producto.id_producto }}">
-                <button type="submit" name="eliminar" onclick="return confirm('¿Estás seguro de eliminar este producto?')">Eliminar</button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
-
+        {% if messages %}
+            {% for message in messages %}
+                toastr.success("{{ message|escapejs }}");
+            {% endfor %}
+        {% endif %}
+    });
+</script>
 {% endblock %}

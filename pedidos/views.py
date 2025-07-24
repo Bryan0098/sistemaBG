@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Cliente, Proveedor, Categoria, Producto, Pedido, DetallePedido
+from .models import *
 from django.utils import timezone
+from datetime import datetime
+from decimal import Decimal
 
 # Home View
 def home(request):
@@ -138,9 +140,9 @@ def gestionar_productos(request):
             descripcion = request.POST.get('descripcion')
             precio = request.POST.get('precio')
             stock = request.POST.get('stock')
-            stock_minimo = request.POST.get('stock_minimo')
-            id_categoria = request.POST.get('categoria')  # nombre del campo debe coincidir con el de la plantilla
-            id_proveedor = request.POST.get('proveedor')  # nombre del campo debe coincidir con el de la plantilla
+            stock_minimo = 5
+            id_categoria = request.POST.get('categoria')
+            id_proveedor = request.POST.get('proveedor')
 
             Producto.objects.create(
                 nombre=nombre,
@@ -161,9 +163,9 @@ def gestionar_productos(request):
             producto.descripcion = request.POST.get('descripcion')
             producto.precio = request.POST.get('precio')
             producto.stock = request.POST.get('stock')
-            producto.stock_minimo = request.POST.get('stock_minimo')
-            producto.categoria_id = request.POST.get('categoria')  # Asegurando que se actualice la categoría
-            producto.proveedor_id = request.POST.get('proveedor')  # Asegurando que se actualice el proveedor
+            producto.stock_minimo = 5
+            producto.categoria_id = request.POST.get('categoria')
+            producto.proveedor_id = request.POST.get('proveedor')
             producto.save()
             messages.success(request, "Producto actualizado con éxito.")
         
@@ -281,4 +283,177 @@ def gestionar_detalle_pedidos(request):
         'detalles_pedido': detalles_pedido,
         'pedidos': pedidos,
         'productos': productos
+    })
+
+
+
+def convert_to_serializable(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)
+    elif isinstance(obj, list):
+        return [convert_to_serializable(i) for i in obj]
+    elif isinstance(obj, dict):
+        return {k: convert_to_serializable(v) for k, v in obj.items()}
+    else:
+        return obj
+from django.shortcuts import render
+from django.db import connection
+import json
+from decimal import Decimal
+
+def convert_to_serializable(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)
+    elif isinstance(obj, list):
+        return [convert_to_serializable(i) for i in obj]
+    elif isinstance(obj, dict):
+        return {k: convert_to_serializable(v) for k, v in obj.items()}
+    else:
+        return obj
+
+def charts(request):
+    with connection.cursor() as cursor:
+
+        # Pedidos por Mes
+        cursor.execute("""
+            SELECT MONTHNAME(fecha) AS mes, COUNT(*) AS total
+            FROM pedido
+            WHERE fecha >= CURDATE() - INTERVAL 6 MONTH
+            GROUP BY MONTH(fecha), MONTHNAME(fecha)
+            ORDER BY MONTH(fecha)
+        """)
+        pedidos_data = cursor.fetchall()
+        pedidos_labels = [row[0] for row in pedidos_data]
+        pedidos_values = [row[1] for row in pedidos_data]
+
+        # Ventas por Mes
+        cursor.execute("""
+            SELECT MONTHNAME(fecha) AS mes, SUM(total) AS total
+            FROM pedido
+            WHERE fecha >= CURDATE() - INTERVAL 6 MONTH
+            GROUP BY MONTH(fecha), MONTHNAME(fecha)
+            ORDER BY MONTH(fecha)
+        """)
+        ventas_data = cursor.fetchall()
+        ventas_labels = [row[0] for row in ventas_data]
+        ventas_values = [row[1] for row in ventas_data]
+
+        # Pedidos por Día
+        cursor.execute("""
+            SELECT DATE_FORMAT(fecha, '%%e de %%M') AS dia, COUNT(*) AS total
+            FROM pedido
+            WHERE fecha >= CURDATE() - INTERVAL 15 DAY
+            GROUP BY DATE(fecha)
+            ORDER BY DATE(fecha)
+        """)
+        pedidos_dia_data = cursor.fetchall()
+        pedidos_dia_labels = [row[0] for row in pedidos_dia_data]
+        pedidos_dia_values = [row[1] for row in pedidos_dia_data]
+
+        # Clientes Nuevos por Mes
+        cursor.execute("""
+            SELECT MONTHNAME(fecha_creacion) AS mes, COUNT(*) AS total
+            FROM cliente
+            WHERE fecha_creacion >= CURDATE() - INTERVAL 6 MONTH
+            GROUP BY MONTH(fecha_creacion), MONTHNAME(fecha_creacion)
+            ORDER BY MONTH(fecha_creacion)
+        """)
+        clientes_data = cursor.fetchall()
+        clientes_labels = [row[0] for row in clientes_data]
+        clientes_values = [row[1] for row in clientes_data]
+
+        # Pedidos por Estado
+        cursor.execute("""
+            SELECT estado, COUNT(*) AS total
+            FROM pedido
+            GROUP BY estado
+        """)
+        estado_data = cursor.fetchall()
+        estado_labels = [row[0] for row in estado_data]
+        estado_values = [row[1] for row in estado_data]
+
+        # Top Productos Vendidos
+        cursor.execute("""
+            SELECT p.nombre, SUM(dp.cantidad) AS total
+            FROM detalle_pedido dp
+            JOIN producto p ON dp.id_producto = p.id_producto
+            GROUP BY p.id_producto
+            ORDER BY total DESC
+            LIMIT 5
+        """)
+        productos_data = cursor.fetchall()
+        productos_labels = [row[0] for row in productos_data]
+        productos_values = [row[1] for row in productos_data]
+
+        # Categorías con más productos
+        cursor.execute("""
+            SELECT c.nombre, COUNT(p.id_producto) AS total
+            FROM categoria c
+            JOIN producto p ON c.id_categoria = p.id_categoria
+            GROUP BY c.id_categoria
+            ORDER BY total DESC
+            LIMIT 5
+        """)
+        categorias_data = cursor.fetchall()
+        categorias_labels = [row[0] for row in categorias_data]
+        categorias_values = [row[1] for row in categorias_data]
+
+        # Clientes Top
+        cursor.execute("""
+            SELECT CONCAT(c.nombre, ' ', c.apellido), SUM(p.total) AS total
+            FROM cliente c
+            JOIN pedido p ON p.id_cliente = c.id_cliente
+            GROUP BY c.id_cliente
+            ORDER BY total DESC
+            LIMIT 5
+        """)
+        clientes_top_data = cursor.fetchall()
+        clientes_top_labels = [row[0] for row in clientes_top_data]
+        clientes_top_values = [row[1] for row in clientes_top_data]
+
+        # Proveedores más usados
+        cursor.execute("""
+            SELECT pr.nombre, COUNT(p.id_producto)
+            FROM proveedor pr
+            JOIN producto p ON p.id_proveedor = pr.id_proveedor
+            GROUP BY pr.id_proveedor
+            ORDER BY COUNT(p.id_producto) DESC
+            LIMIT 5
+        """)
+        proveedores_data = cursor.fetchall()
+        proveedores_labels = [row[0] for row in proveedores_data]
+        proveedores_values = [row[1] for row in proveedores_data]
+
+        # Productos con menor stock
+        cursor.execute("""
+            SELECT nombre, stock
+            FROM producto
+            ORDER BY stock ASC
+            LIMIT 5
+        """)
+        stock_data = cursor.fetchall()
+        stock_labels = [row[0] for row in stock_data]
+        stock_values = [row[1] for row in stock_data]
+
+    return render(request, 'charts.html', {
+        'pedidos_labels': json.dumps(pedidos_labels),
+        'pedidos_values': json.dumps(convert_to_serializable(pedidos_values)),
+        'ventas_labels': json.dumps(ventas_labels),
+        'ventas_values': json.dumps(convert_to_serializable(ventas_values)),
+        'pedidos_dia_labels': json.dumps(pedidos_dia_labels),
+        'pedidos_dia_values': json.dumps(convert_to_serializable(pedidos_dia_values)),
+        'clientes_labels': json.dumps(clientes_labels),
+        'clientes_values': json.dumps(convert_to_serializable(clientes_values)),
+        'estado_labels': json.dumps(estado_labels),
+        'estado_values': json.dumps(convert_to_serializable(estado_values)),
+        'productos_labels': json.dumps(productos_labels),
+        'productos_values': json.dumps(convert_to_serializable(productos_values)),
+        'categorias_labels': json.dumps(categorias_labels),
+        'categorias_values': json.dumps(convert_to_serializable(categorias_values)),
+        'clientes_top_labels': json.dumps(clientes_top_labels),
+        'clientes_top_values': json.dumps(convert_to_serializable(clientes_top_values)),
+        'proveedores_labels': json.dumps(proveedores_labels),
+        'proveedores_values': json.dumps(convert_to_serializable(proveedores_values)),
+        'stock_labels': json.dumps(stock_labels),
+        'stock_values': json.dumps(convert_to_serializable(stock_values)),
     })

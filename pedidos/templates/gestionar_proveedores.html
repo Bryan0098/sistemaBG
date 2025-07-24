@@ -1,62 +1,172 @@
 {% extends 'base.html' %}
 
-{% block title %}Gestionar Proveedores - Portal{% endblock %}
+{% block title %}Gestionar Proveedores{% endblock %}
 
 {% block content %}
-<h1>Gestionar Proveedores</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Proveedores</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalProveedor">+ Nuevo</button>
+</div>
 
-<!-- Mensajes de éxito o error -->
-{% if messages %}
-    <ul>
-        {% for message in messages %}
-            <li>{{ message }}</li>
+<table id="tabla-proveedores" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Contacto</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for proveedor in proveedores %}
+        <tr>
+            <td>{{ proveedor.nombre }}</td>
+            <td>{{ proveedor.contacto }}</td>
+            <td>{{ proveedor.telefono }}</td>
+            <td>
+                <button class="btn btn-warning btn-sm btn-editar"
+                        data-id="{{ proveedor.id_proveedor }}"
+                        data-nombre="{{ proveedor.nombre }}"
+                        data-contacto="{{ proveedor.contacto }}"
+                        data-telefono="{{ proveedor.telefono }}">
+                    Editar
+                </button>
+                <form method="POST" class="d-inline form-eliminar">
+                    {% csrf_token %}
+                    <input type="hidden" name="id_proveedor" value="{{ proveedor.id_proveedor }}">
+                    <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
+                </form>
+            </td>
+        </tr>
         {% endfor %}
-    </ul>
-{% endif %}
+    </tbody>
+</table>
 
-<!-- Formulario para Crear Proveedor -->
-<h2>Crear Proveedor</h2>
-<form method="POST">
-    {% csrf_token %}
-    <label for="nombre">Nombre</label>
-    <input type="text" id="nombre" name="nombre" required><br>
+<!-- Modal -->
+<div class="modal fade" id="modalProveedor" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="form-proveedor" method="POST" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Proveedor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="id_proveedor" id="id_proveedor">
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="nombre" id="nombre" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contacto</label>
+                    <input type="text" name="contacto" id="contacto" class="form-control" placeholder="Ej: Encargado de compras, jefe, etc." required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="telefono" id="telefono" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" name="crear" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
 
-    <label for="contacto">Contacto</label>
-    <input type="text" id="contacto" name="contacto" required><br>
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        $('#tabla-proveedores').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: 'excelHtml5', text: 'Exportar a Excel', className: 'btn btn-success btn-sm' },
+                { extend: 'pdfHtml5', text: 'Exportar a PDF', className: 'btn btn-danger btn-sm' },
+                { extend: 'print', text: 'Imprimir', className: 'btn btn-info btn-sm' }
+            ],
+            language: { url: "{{ '/static/assets/plugins/datatables/lang/es-ES.json' }}" }
+        });
 
-    <label for="telefono">Teléfono</label>
-    <input type="text" id="telefono" name="telefono" required><br>
+        $('#form-proveedor').validate({
+            errorClass: 'is-invalid',
+            validClass: 'is-valid',
+            errorElement: 'div',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                error.insertAfter(element);
+            },
+            highlight: function (element) {
+                $(element).addClass('is-invalid').removeClass('is-valid');
+            },
+            unhighlight: function (element) {
+                $(element).removeClass('is-invalid').addClass('is-valid');
+            },
+            rules: {
+                nombre: { required: true },
+                contacto: { required: true },
+                telefono: {
+                    required: true,
+                    digits: true,
+                    minlength: 10,
+                    maxlength: 10,
+                    pattern: /^09\d{8}$/
+                }
+            },
+            messages: {
+                nombre: "Ingrese el nombre",
+                contacto: "Ingrese el contacto",
+                telefono: {
+                    required: "Ingrese el teléfono",
+                    digits: "Solo números",
+                    minlength: "Debe tener 10 dígitos",
+                    maxlength: "Debe tener 10 dígitos",
+                    pattern: "Debe empezar con 09"
+                }
+            }
+        });
 
-    <button type="submit" name="crear">Crear Proveedor</button>
-</form>
+        $('.btn-editar').click(function () {
+            $('#id_proveedor').val($(this).data('id'));
+            $('#nombre').val($(this).data('nombre'));
+            $('#contacto').val($(this).data('contacto'));
+            $('#telefono').val($(this).data('telefono'));
+            $('button[name="crear"]').attr('name', 'actualizar');
+            $('#modalProveedor .modal-title').text('Editar Proveedor');
+            $('#modalProveedor').modal('show');
+        });
 
-<hr>
+        $('#modalProveedor').on('hidden.bs.modal', function () {
+            $('#form-proveedor')[0].reset();
+            $('#id_proveedor').val('');
+            $('button[name="actualizar"]').attr('name', 'crear');
+            $('#modalProveedor .modal-title').text('Agregar Proveedor');
+        });
 
-<!-- Lista de Proveedores -->
-<h2>Lista de Proveedores</h2>
-<ul>
-    {% for proveedor in proveedores %}
-        <li>
-            {{ proveedor.nombre }} - {{ proveedor.contacto }} - {{ proveedor.telefono }}
-            
-            <!-- Formulario para Actualizar Proveedor -->
-            <button onclick="document.getElementById('update-form-{{ proveedor.id_proveedor }}').style.display = 'block'">Editar</button>
-            <form id="update-form-{{ proveedor.id_proveedor }}" method="POST" style="display:none;">
-                {% csrf_token %}
-                <input type="hidden" name="id_proveedor" value="{{ proveedor.id_proveedor }}">
-                <input type="text" name="nombre" value="{{ proveedor.nombre }}" required><br>
-                <input type="text" name="contacto" value="{{ proveedor.contacto }}" required><br>
-                <input type="text" name="telefono" value="{{ proveedor.telefono }}" required><br>
-                <button type="submit" name="actualizar">Actualizar Proveedor</button>
-            </form>
+        $('.form-eliminar').submit(function (e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
 
-            <!-- Formulario para Eliminar Proveedor -->
-            <form method="POST" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="id_proveedor" value="{{ proveedor.id_proveedor }}">
-                <button type="submit" name="eliminar" onclick="return confirm('¿Estás seguro de eliminar este proveedor?')">Eliminar</button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
+        {% if messages %}
+            {% for message in messages %}
+                toastr.success("{{ message|escapejs }}");
+            {% endfor %}
+        {% endif %}
+    });
+</script>
 {% endblock %}
