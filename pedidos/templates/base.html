@@ -100,65 +100,53 @@
                     {% with request.resolver_match.url_name as current %}
                     <li class="nav-item">
                         <a class="nav-link {% if current == 'home' %}active{% endif %}" href="{% url 'home' %}">
-                            <span class="nav-icon"><i class="bi bi-house-door-fill"></i></span>
+                            <span class="nav-icon"><i class="fas fa-home"></i></span>
                             <span class="nav-link-text">Inicio</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if current == 'charts' %}active{% endif %}" href="{% url 'charts' %}">
-                            <span class="nav-icon"><i class="bi bi-graph-up-arrow"></i></span>
+                            <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
                             <span class="nav-link-text">Dashboard</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if current == 'gestionar_clientes' %}active{% endif %}" href="{% url 'gestionar_clientes' %}">
-                            <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
+                            <span class="nav-icon"><i class="fas fa-users"></i></span>
                             <span class="nav-link-text">Clientes</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if current == 'gestionar_proveedores' %}active{% endif %}" href="{% url 'gestionar_proveedores' %}">
-                            <span class="nav-icon"><i class="bi bi-truck"></i></span>
+                            <span class="nav-icon"><i class="fas fa-truck"></i></span>
                             <span class="nav-link-text">Proveedores</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if current == 'gestionar_categorias' %}active{% endif %}" href="{% url 'gestionar_categorias' %}">
-                            <span class="nav-icon"><i class="bi bi-tags-fill"></i></span>
+                            <span class="nav-icon"><i class="fas fa-tags"></i></span>
                             <span class="nav-link-text">Categorías</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if current == 'gestionar_productos' %}active{% endif %}" href="{% url 'gestionar_productos' %}">
-                            <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
+                            <span class="nav-icon"><i class="fas fa-box-open"></i></span>
                             <span class="nav-link-text">Productos</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if current == 'gestionar_pedidos' %}active{% endif %}" href="{% url 'gestionar_pedidos' %}">
-                            <span class="nav-icon"><i class="bi bi-cart-check-fill"></i></span>
+                            <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span>
                             <span class="nav-link-text">Pedidos</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if current == 'gestionar_detalle_pedidos' %}active{% endif %}" href="{% url 'gestionar_detalle_pedidos' %}">
-                            <span class="nav-icon"><i class="bi bi-receipt-cutoff"></i></span>
+                            <span class="nav-icon"><i class="fas fa-file-invoice"></i></span>
                             <span class="nav-link-text">Detalle Pedidos</span>
                         </a>
                     </li>
                     {% endwith %}
-<!--                     <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span class="nav-icon"><i class="bi bi-person-badge-fill"></i></span>
-                            <span class="nav-link-text">Usuarios</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span>
-                            <span class="nav-link-text">Reportes</span>
-                        </a>
-                    </li> -->
                 </ul>
             </nav>
 
