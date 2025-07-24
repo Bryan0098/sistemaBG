@@ -34,11 +34,12 @@
                     data-telefono="{{ cliente.telefono }}"
                     data-email="{{ cliente.email }}">Editar</button>
 
-                <form method="POST" class="d-inline form-eliminar">
+                <form method="POST" action="{% url 'gestionar_clientes' %}" class="d-inline">
                     {% csrf_token %}
                     <input type="hidden" name="id_cliente" value="{{ cliente.id_cliente }}">
                     <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
                 </form>
+
             </td>
         </tr>
         {% endfor %}

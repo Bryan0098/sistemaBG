@@ -34,11 +34,12 @@
                         data-estado="{{ pedido.estado }}" 
                         data-total="{{ pedido.total }}">
                         Editar</button>
-                <form method="POST" class="d-inline form-eliminar">
-                    {% csrf_token %}
-                    <input type="hidden" name="id_pedido" value="{{ pedido.id_pedido }}">
-                    <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
-                </form>
+                    <form method="POST" action="{% url 'gestionar_pedidos' %}" class="d-inline form-eliminar">
+                        {% csrf_token %}
+                        <input type="hidden" name="id_pedido" value="{{ pedido.id_pedido }}">
+                        <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+
             </td>
         </tr>
         {% endfor %}

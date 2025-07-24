@@ -45,11 +45,12 @@
                         data-proveedor="{{ producto.proveedor.id_proveedor }}">
                     Editar
                 </button>
-                <form method="POST" class="d-inline form-eliminar">
+                <form method="POST" action="{% url 'gestionar_productos' %}" class="d-inline form-eliminar">
                     {% csrf_token %}
                     <input type="hidden" name="id_producto" value="{{ producto.id_producto }}">
                     <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
                 </form>
+
             </td>
         </tr>
         {% endfor %}

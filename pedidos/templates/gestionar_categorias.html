@@ -26,11 +26,12 @@
                         data-nombre="{{ categoria.nombre }}" 
                         data-descripcion="{{ categoria.descripcion }}">Editar</button>
 
-                <form method="POST" class="d-inline form-eliminar">
-                    {% csrf_token %}
-                    <input type="hidden" name="id_categoria" value="{{ categoria.id_categoria }}">
-                    <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
-                </form>
+                    <form method="POST" action="{% url 'gestionar_categorias' %}" class="d-inline form-eliminar">
+                        {% csrf_token %}
+                        <input type="hidden" name="id_categoria" value="{{ categoria.id_categoria }}">
+                        <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+
             </td>
         </tr>
         {% endfor %}

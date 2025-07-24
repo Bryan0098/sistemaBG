@@ -39,11 +39,12 @@
                     Editar
                 </button>
 
-                <form method="POST" class="d-inline form-eliminar">
+                <form method="POST" action="{% url 'gestionar_detalle_pedidos' %}" class="d-inline form-eliminar">
                     {% csrf_token %}
                     <input type="hidden" name="id_detalle" value="{{ detalle.id_detalle }}">
                     <button type="submit" name="eliminar" class="btn btn-danger btn-sm">Eliminar</button>
                 </form>
+
             </td>
         </tr>
         {% endfor %}
