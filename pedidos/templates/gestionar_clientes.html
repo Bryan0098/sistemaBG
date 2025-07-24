@@ -92,14 +92,14 @@
                 { 
                     extend: 'excelHtml5', 
                     text: 'Exportar Excel', 
-                    className: 'btn btn-success btn-sm' 
+                    className: 'btn btn-success btn-sm'                 
                 },
                 { 
                     extend: 'pdfHtml5', 
                     text: 'Exportar PDF', 
                     className: 'btn btn-danger btn-sm',
                     exportOptions: {
-                        columns: '  
+                        columns: ':not(:last-child)'
                     }
                 },
                 { 
